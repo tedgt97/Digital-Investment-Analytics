@@ -1,5 +1,5 @@
 """
-Configuration Manager for Stock Predictor
+Configuration Manager for Digital-Investment-Analytics
 
 This module handles loading API keys and configuration settings.
 It keeps sensitive information separate from code.

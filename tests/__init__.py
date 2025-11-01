@@ -1,3 +1,3 @@
 """
-Test suite for Stock Predictor
+Test suite for Digital-Investment-Analytics
 """

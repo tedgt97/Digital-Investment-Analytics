@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "stock-predictor"
+name = "digital-investment-analytics"
 version = "0.1.0"
-description = "Advanced medium to long-term stock predictor using deep learning and ML models"
+description = "Advanced medium to long-term investment analytics using deep learning and ML models"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "tedgt97", email = "tedgt97@gmail.com"}
 ]
 keywords = ["stock", "prediction", "machine-learning", "deep-learning", "finance"]
 
@@ -52,13 +52,13 @@ storage = [
 
 # All optional dependencies
 all = [
-    "stock-predictor[ml,dev,storage]"
+    "digital-investment-analytics[ml,dev,storage]"
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/stock-predictor"
-Repository = "https://github.com/yourusername/stock-predictor"
-Documentation = "https://github.com/yourusername/stock-predictor/blob/main/README.md"
+Homepage = "https://github.com/tedgt97/Digital-Investment-Analytics"
+Repository = "https://github.com/tedgt97/Digital-Investment-Analytics"
+Documentation = "https://github.com/tedgt97/Digital-Investment-Analytics/blob/main/README.md"
 
 [tool.setuptools]
 # Automatically find all packages

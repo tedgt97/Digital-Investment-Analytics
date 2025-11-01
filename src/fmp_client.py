@@ -66,7 +66,7 @@ class FMPClient:
         # Create a session for connection pooling (faster requests)
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Stock-Predictor/0.1.0'
+            'User-Agent': 'Digital-Investment-Analytics/0.1.0'
         })
 
         if self.verbose:

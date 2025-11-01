@@ -1,6 +1,6 @@
-# Stock Predictor
+# Digital-Investment-Analytics
 
-Advanced medium to long-term stock predictor using deep learning and ML models.
+Advanced medium to long-term investment analytics using deep learning and ML models.
 
 ## 🎯 Features
 
@@ -13,8 +13,8 @@ Advanced medium to long-term stock predictor using deep learning and ML models.
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/stock-predictor.git
-cd stock-predictor
+git clone https://github.com/tedgt97/Digital-Investment-Analytics.git
+cd Digital-Investment-Analytics
 ```
 
 ### 2. Create Virtual Environment
@@ -71,7 +71,7 @@ print(prices.head())
 ## 📊 Project Structure
 
 ```
-Stock Predictor/
+Digital-Investment-Analytics/
 ├── src/                    # Source code
 │   ├── config.py          # Configuration management
 │   ├── fmp_client.py      # API client
@@ -99,4 +99,4 @@ MIT License
 
 ## 👤 Author
 
-Your Name - [GitHub](https://github.com/yourusername)
+Your Name - [GitHub](https://github.com/tedgt97)

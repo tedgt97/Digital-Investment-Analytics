@@ -25,7 +25,7 @@ sys.path.insert(0, str(project_root))
 def main():
     """Test the project setup"""
     print("=" * 70)
-    print("🧪 TESTING STOCK PREDICTOR SETUP")
+    print("🧪 TESTING DIGITAL-INVESTMENT-ANALYTICS SETUP")
     print("=" * 70)
     
     try:
