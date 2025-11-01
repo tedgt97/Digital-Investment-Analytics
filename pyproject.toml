@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stock-predictor"
+version = "0.1.0"
+description = "Advanced medium to long-term stock predictor using deep learning and ML models"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+keywords = ["stock", "prediction", "machine-learning", "deep-learning", "finance"]
+
+# Dependencies - these get installed with your package
+dependencies = [
+    "requests>=2.31.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "scikit-learn>=1.3.0",
+    "tqdm>=4.66.0",
+]
+
+# Optional dependencies for different use cases
+[project.optional-dependencies]
+# For deep learning
+ml = [
+    "tensorflow>=2.13.0",
+    "torch>=2.0.0",
+    "keras>=2.13.0",
+]
+
+# For development
+dev = [
+    "jupyter>=1.0.0",
+    "notebook>=7.0.0",
+    "pytest>=7.4.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "ipykernel>=6.25.0",
+]
+
+# For data storage
+storage = [
+    "h5py>=3.9.0",
+    "pyarrow>=12.0.0",
+]
+
+# All optional dependencies
+all = [
+    "stock-predictor[ml,dev,storage]"
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/stock-predictor"
+Repository = "https://github.com/yourusername/stock-predictor"
+Documentation = "https://github.com/yourusername/stock-predictor/blob/main/README.md"
+
+[tool.setuptools]
+# Automatically find all packages
+packages = ["src"]
+
+[tool.setuptools.package-data]
+# Include non-Python files
+"*" = ["*.txt", "*.md"]
+
+# Black code formatter settings
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+# Pytest settings
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
