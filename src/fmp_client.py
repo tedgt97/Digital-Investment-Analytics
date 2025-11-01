@@ -123,4 +123,96 @@ class FMPClient:
             if self.verbose:
                 print(f"Request {self.request_count}/{self.daily_limit}: {endpoint}")
             
-            
+            # Check HTTP status
+            response.raise_for_status()
+
+            # Parse JSON response
+            data = response.json()
+
+            # Check for API errors
+            if isinstance(data, dict) and 'Error Message' in data:
+                raise Exception(f"FMP API Error: {data['Error Message']}")
+
+            # Add small delay to respect rate limits (4 requests/second max)
+            time.sleep(0.25)
+
+            return data
+        
+        except requests.exceptions.HTTPError as e:
+            raise Exception(f"HTTP Error {response.status_code}: {str(e)}")
+        except requests.exceptions.Timeout:
+            raise Exception(f"Request timeout for {endpoint}")
+        except requests.exceptions.ConnectionError:
+            raise Exception(f"Connection error - check internet connection")
+        except Exception as e:
+            raise Exception(f"Request failed for {endpoint}: {str(e)}")
+
+    def get_historical_prices(
+        self,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+        interval: str = '1day'
+    ) -> pd.DataFrame:
+        """
+        Get historical price data for a stock
+
+        Args:
+            symbol: Stock ticker (e.g., 'AAPL')
+            start_date: Start date in 'YYYY-MM-DD'
+            end_date: End date in 'YYYY-MM'DD'
+            internval: Time interval ('1day', '1hour', '5min', etc.)
+        
+        Returns: 
+            DataFRame with columns: date, open, high, low, close, volume
+
+        Example:
+            >>> prices = clinet.get_historical_prices('AAPL', '2020-01'01', '2024-12-31')
+            >>> print(prices.head())
+        """
+        endpoint = f"/historical-price-full/{symbol}"
+        params = {
+            'from': start_date,
+            'to': end_date
+        }
+        
+        data = self._make_request(endpoint, params)
+
+        if not data or 'historical' not in data:
+            raise Exception(f"No historical data found for {symbol}")
+        
+        df = pd.DataFrame(data['historical'])
+        df['date'] = pd.to_datetime(df['date'])
+        df = df.sort_values('date').reset_index(drop=True)
+
+        return df
+
+    def get_quote(self, symbol: str) -> Dict:
+        """
+        Get real-time stock quote
+
+        Args:
+            symbol: Stock ticker
+
+        Returns:
+            Dict with current price, volume, change, etc.
+
+        Example:
+            >>> quote = client.get_quote('AAPL)
+            >>> print(f"Current price: ${quote['price']}")
+        """
+        endpoint = f"/quote/{symbol}"
+        data = self._make_request(endpoint)
+
+        if not data:
+            raise Exception(f"No quote data found for {symbol}")
+        
+        return data[0] if isinstance(data, list) else data
+    
+    def get_income_statement(
+            self,
+            symbo: str,
+            period: str = 'annual',
+            limit = int = 5
+    ) -> pd.DataFrame
+        
