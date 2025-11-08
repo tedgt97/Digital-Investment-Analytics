@@ -42,8 +42,7 @@ class FMPClient:
     """
 
     # API endpoints
-    BASE_URL = "https://financialmodelingprep.com/api/v3"
-    BASE_URL_V4 = "https://financialmodelingprep.com/api/v4"
+    BASE_URL = "https://financialmodelingprep.com/stable"
 
     def __init__(self, api_key: Optional[str] = None, verbose: bool = True):
         """
@@ -71,7 +70,7 @@ class FMPClient:
 
         if self.verbose:
             print(f"FMP Client initialized")
-            print("Daily request limit: {self.daily_limit}")
+            print(f"Daily request limit: {self.daily_limit}")
 
     def _make_request(
             self, 
@@ -83,9 +82,9 @@ class FMPClient:
         Internal method to make API requests with error handling
 
         Args:
-            endpoint: API endpoint (e.g., '/quote/AAPL')
+            endpoint: API endpoint
             params: Additional URL parameters
-            base_url: Override default base URL (for v4 endpoints)
+            base_url: Override default base URL
         
         Returns:
             dict or list: JSON response from API
@@ -160,14 +159,14 @@ class FMPClient:
         Args:
             symbol: Stock ticker (e.g., 'AAPL')
             start_date: Start date in 'YYYY-MM-DD'
-            end_date: End date in 'YYYY-MM'DD'
-            internval: Time interval ('1day', '1hour', '5min', etc.)
+            end_date: End date in 'YYYY-MM-DD'
+            interval: Time interval ('1day', '1hour', '5min', etc.)
         
         Returns: 
-            DataFRame with columns: date, open, high, low, close, volume
+            DataFrame with columns: date, open, high, low, close, volume
 
         Example:
-            >>> prices = clinet.get_historical_prices('AAPL', '2020-01'01', '2024-12-31')
+            >>> prices = client.get_historical_prices('AAPL', '2020-01-01', '2024-12-31')
             >>> print(prices.head())
         """
         endpoint = f"/historical-price-full/{symbol}"
@@ -198,10 +197,10 @@ class FMPClient:
             Dict with current price, volume, change, etc.
 
         Example:
-            >>> quote = client.get_quote('AAPL)
+            >>> quote = client.get_quote('AAPL')
             >>> print(f"Current price: ${quote['price']}")
         """
-        endpoint = f"/quote/{symbol}"
+        endpoint = f"/quote?symbol={symbol}"
         data = self._make_request(endpoint)
 
         if not data:
@@ -211,8 +210,72 @@ class FMPClient:
     
     def get_income_statement(
             self,
-            symbo: str,
+            symbol: str,
             period: str = 'annual',
-            limit = int = 5
-    ) -> pd.DataFrame
+            limit: int = 5
+    ) -> pd.DataFrame:
+        """
+        Get income statement data
+
+        Args:
+            symbol: Stock ticker
+            period: 'annual' or 'quarter'
+            limit: Number of periods to retrieve
+
+        Returns:
+            DataFrame with financial metrics
+
+        Example:
+            >>> fundamentals = client.get_income_statement('AAPL')
+        """
+        endpoint = f"/income-statement?symbol={symbol}"
+        params = {
+            'period': period,
+            'limit': limit
+        }
+
+        data = self._make_request(endpoint, params)
+
+        if not data:
+            raise Exception(f"No income statement data found for {symbol}")
         
+        df = pd.DataFrame(data)
+        if 'date' in df.columns:
+            df['date'] = pd.to_datetime(df['date'])
+        
+        return df
+
+    def get_company_profile(self, symbol: str) -> Dict:
+        """
+        Get company profile information
+
+        Args:
+            symbol: Stock ticker
+        
+        Returns:
+            Dict with company name, sector, industry, description, etc.
+        """
+        endpoint = f"/profile?symbol={symbol}"
+        data = self._make_request(endpoint)
+
+        if not data:
+            raise Exception(f"No profile found for {symbol}")
+        
+        return data[0] if isinstance(data, list) else data
+    
+    def get_multiple_quotes(self, symbols: List[str]) -> pd.DataFrame:
+        """
+        Get quotes for multiple stocks at once
+
+        Args:
+            symbols: List of stock tickers
+
+        Returns:
+            DataFrame with quotes of all symbols
+        """
+        symbols_str = ','.join(symbols)
+        endpoint = f"/quote?symbol={symbols_str}"
+        data = self._make_request(endpoint)
+
+        return pd.DataFrame(data)
+

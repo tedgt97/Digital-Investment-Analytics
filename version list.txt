@@ -2,4 +2,13 @@ ver.0.1.0
     - Initial Setting
 ver.0.1.1
     - Connecting to github
-    
+ver.0.1.2
+    - fmp_client.py get_quote complete.
+ver.0.1.3
+    - fmp_client complete
+    - Test API call
+        * historical prices and get multiple quotes failed. See if I need them
+        * Running pytest tests/test_fmp_client.py -v
+
+
+
