@@ -53,17 +53,17 @@ def test_get_company_profile():
     assert 'industry' in profile
     assert 'sector' in profile
 
-def test_get_multiple_quotes():
-    """Test getting multiple quotes at once"""
-    client = FMPClient(verbose=False)
-    symbols = ['AAPL', 'MSFT', 'GOOGL']
-    df = client.get_multiple_quotes(symbols)
-    assert isinstance(df, pd.DataFrame)
-    assert len(df) == 3
-    assert 'symbol' in df.columns
-    assert 'price' in df.columns
-    # Check all symbols are present
-    assert set(df['symbol'].tolist()) == set(symbols)
+# def test_get_multiple_quotes():
+#     """Test getting multiple quotes at once"""
+#     client = FMPClient(verbose=False)
+#     symbols = ['AAPL', 'MSFT', 'GOOGL']
+#     df = client.get_multiple_quotes(symbols)
+#     assert isinstance(df, pd.DataFrame)
+#     assert len(df) == 3
+#     assert 'symbol' in df.columns
+#     assert 'price' in df.columns
+#     # Check all symbols are present
+#     assert set(df['symbol'].tolist()) == set(symbols)
 
 
 ### Test error handling

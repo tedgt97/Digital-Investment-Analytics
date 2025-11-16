@@ -146,30 +146,28 @@ class FMPClient:
         except Exception as e:
             raise Exception(f"Request failed for {endpoint}: {str(e)}")
 
-    def get_historical_prices(
+    def get_chart(
         self,
         symbol: str,
         start_date: str,
         end_date: str,
-        interval: str = '1day'
     ) -> pd.DataFrame:
         """
-        Get historical price data for a stock
+        Get full price and volume data for a stock
 
         Args:
             symbol: Stock ticker (e.g., 'AAPL')
             start_date: Start date in 'YYYY-MM-DD'
             end_date: End date in 'YYYY-MM-DD'
-            interval: Time interval ('1day', '1hour', '5min', etc.)
         
         Returns: 
-            DataFrame with columns: date, open, high, low, close, volume
+            DataFrame with columns: date, open, high, low, close, volume, change, changePercent, vwap
 
         Example:
-            >>> prices = client.get_historical_prices('AAPL', '2020-01-01', '2024-12-31')
-            >>> print(prices.head())
+            >>> charts = client.get_chart('AAPL', '2020-01-01', '2024-12-31')
+            >>> print(charts.head())
         """
-        endpoint = f"/historical-price-full/{symbol}"
+        endpoint = f"/historical-price-eod/full?symbol={symbol}"
         params = {
             'from': start_date,
             'to': end_date
@@ -177,10 +175,10 @@ class FMPClient:
         
         data = self._make_request(endpoint, params)
 
-        if not data or 'historical' not in data:
-            raise Exception(f"No historical data found for {symbol}")
+        if not data:
+            raise Exception(f"No chart data found for {symbol}")
         
-        df = pd.DataFrame(data['historical'])
+        df = pd.DataFrame(data)
         df['date'] = pd.to_datetime(df['date'])
         df = df.sort_values('date').reset_index(drop=True)
 
@@ -263,19 +261,19 @@ class FMPClient:
         
         return data[0] if isinstance(data, list) else data
     
-    def get_multiple_quotes(self, symbols: List[str]) -> pd.DataFrame:
-        """
-        Get quotes for multiple stocks at once
+    # def get_multiple_quotes(self, symbols: List[str]) -> pd.DataFrame:
+    #     """
+    #     Get quotes for multiple stocks at once
 
-        Args:
-            symbols: List of stock tickers
+    #     Args:
+    #         symbols: List of stock tickers
 
-        Returns:
-            DataFrame with quotes of all symbols
-        """
-        symbols_str = ','.join(symbols)
-        endpoint = f"/quote?symbol={symbols_str}"
-        data = self._make_request(endpoint)
+    #     Returns:
+    #         DataFrame with quotes of all symbols
+    #     """
+    #     symbols_str = ','.join(symbols)
+    #     endpoint = f"/quote?symbol={symbols_str}"
+    #     data = self._make_request(endpoint)
 
-        return pd.DataFrame(data)
+    #     return pd.DataFrame(data)
 
