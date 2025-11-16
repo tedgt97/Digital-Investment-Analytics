@@ -19,10 +19,10 @@ def test_get_quote():
     assert 'symbol' in quote
     assert quote['symbol'] == 'AAPL'
 
-def test_historical_prices():
-    """Test getting historical data"""
+def test_get_chart():
+    """Test getting chart data"""
     client = FMPClient(verbose=False)
-    df = client.get_historical_prices('AAPL', '2024-01-01', '2024-01-31')
+    df = client.get_chart('AAPL', '2024-01-01', '2024-01-31')
     assert isinstance(df, pd.DataFrame)
     assert 'date' in df.columns
     assert 'close' in df.columns
@@ -30,6 +30,9 @@ def test_historical_prices():
     assert 'high' in df.columns
     assert 'low' in df.columns
     assert 'volume' in df.columns
+    assert 'change' in df.columns
+    assert 'changePercent' in df.columns
+    assert 'vwap' in df.columns
     assert len(df) > 0
 
 def test_get_income_statement():
@@ -52,6 +55,13 @@ def test_get_company_profile():
     assert 'companyName' in profile
     assert 'industry' in profile
     assert 'sector' in profile
+
+# def test_get_stock_list():
+#     """Test getting list of symbols"""
+#     client = FMPClient(verbose=False)
+#     profile = client.get_stock_list()
+#     assert isinstance(profile, list)
+#     assert len(profile) > 0
 
 # def test_get_multiple_quotes():
 #     """Test getting multiple quotes at once"""

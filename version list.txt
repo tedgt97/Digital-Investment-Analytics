@@ -13,5 +13,8 @@ ver.0.1.4
     - Fixing test api call
         * historical prices --> chart
         * commenting multiple quotes
+    - fmp_cli.py
+    
+    * cli to pyproject.toml
 
 

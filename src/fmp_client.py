@@ -261,6 +261,27 @@ class FMPClient:
         
         return data[0] if isinstance(data, list) else data
     
+    # Not available for free tier
+    # def get_stock_list(self) -> Dict:
+    #     """
+    #     Get a comprehensive list of financial symbols
+
+    #     Args:
+    #         None
+        
+    #     Returns: symbol, companyName
+    #     """
+    #     endpoint = f"/stock-list"
+    #     data = self._make_request(endpoint)
+
+    #     if not data:
+    #         raise Exception(f"No stock list data found")
+        
+    #     df = pd.DataFrame(data)
+    #     return df
+    
+
+    
     # def get_multiple_quotes(self, symbols: List[str]) -> pd.DataFrame:
     #     """
     #     Get quotes for multiple stocks at once
