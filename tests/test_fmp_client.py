@@ -1,9 +1,7 @@
-"""
-Tests for FMP Client
-"""
+"""Tests for FMP Client"""
 import pytest
 import pandas as pd
-from src.fmp_client import FMPClient
+from fmp.client import FMPClient  # --Fixed--
 
 def test_client_initialization():
     """Test that client initializes correctly"""

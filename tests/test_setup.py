@@ -18,9 +18,9 @@ DO NOT USE: tests.test_setup.py (that's Python import syntax, not a PowerShell c
 import sys
 from pathlib import Path
 
-# Add project root to Python path (so we can import src modules)
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+# Add project root to Python path (so we can import the package before installation)  # --Fixed--
+project_root = Path(__file__).parent.parent  # --Fixed--
+sys.path.insert(0, str(project_root))  # --Fixed--
 
 def main():
     """Test the project setup"""
@@ -31,7 +31,7 @@ def main():
     try:
         # Test 1: Import config module
         print("\n[Test 1] Importing config module...")
-        from src.config import config
+        from fmp.config import config  # --Fixed--
         print("✅ Config import successful")
         print(f"   Config: {config}")
         
@@ -60,7 +60,7 @@ def main():
         print("=" * 70)
         print("\n📋 Next steps:")
         print("   1. Run: pip install -e .")
-        print("   2. Create fmp_client.py in src/")
+        print("   2. Use from fmp.client import FMPClient in your code.")  # --Fixed--
         print("   3. Start building your ML models!")
         
         return True

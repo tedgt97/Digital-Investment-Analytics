@@ -61,12 +61,11 @@ Repository = "https://github.com/tedgt97/Digital-Investment-Analytics"
 Documentation = "https://github.com/tedgt97/Digital-Investment-Analytics/blob/main/README.md"
 
 [tool.setuptools]
-# Automatically find all packages
-packages = ["src"]
+# Use 'src' as the root so top-level packages like 'fmp' are importable after installation. # --Fixed--
+package-dir = {"" = "src"} # --Fixed--
 
-[tool.setuptools.package-data]
-# Include non-Python files
-"*" = ["*.txt", "*.md"]
+[tool.setuptools.packages.find] # --Added--
+where = ["src"] # --Added--
 
 # Black code formatter settings
 [tool.black]

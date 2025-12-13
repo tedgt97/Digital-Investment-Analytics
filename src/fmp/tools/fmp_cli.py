@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 import json
 import pandas as pd
-from src.fmp_client import FMPClient
+from fmp.client import FMPClient  # --Fixed--
 
 def save_json(obj, path: Path):
     path.parent.mkdir(parents=True, exist_ok=True)

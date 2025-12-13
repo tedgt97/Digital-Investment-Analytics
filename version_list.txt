@@ -14,7 +14,8 @@ ver.0.1.4
         * historical prices --> chart
         * commenting multiple quotes
     - fmp_cli.py
-    
-    * cli to pyproject.toml
 
+ver.0.2.0
+    - pyproject.toml jeonsanghwa
+    - 01_FMPClient.ipynb initiate
 

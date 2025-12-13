@@ -55,27 +55,41 @@ pip install -e ".[ml,dev]"
 
 ## 🚀 Quick Start
 
+Most day-to-day experimentation is done in notebooks first; the terminal/CLI is best suited for future bulk downloads once you have a higher API limit. # --Added--
+
 ```python
-from src.fmp_client import FMPClient
+from fmp.client import FMPClient  # --Fixed--
 
 # Initialize client
 client = FMPClient()
 
 # Get stock data
-prices = client.get_historical_prices('AAPL', '2020-01-01', '2024-12-31')
-fundamentals = client.get_income_statement('AAPL')
+prices = client.get_chart("AAPL", "2020-01-01", "2024-12-31")  # --Fixed--
+fundamentals = client.get_income_statement("AAPL")
 
 print(prices.head())
 ```
+
+### CLI usage (optional, via terminal) # --Added--
+
+After installing in editable mode (`pip install -e .`), you can run the FMP CLI from the project root:
+
+```bash
+python -m fmp.tools.fmp_cli quote --symbol AAPL  # --Added--
+python -m fmp.tools.fmp_cli chart --symbol AAPL --from 2024-01-01 --to 2024-01-31  # --Added--
+```
+
+Because the free FMP API key has strict limits, the CLI is currently best for small batches; large multi-symbol runs are an ideal future plan once higher limits are available. # --Added--
 
 ## 📊 Project Structure
 
 ```
 Digital-Investment-Analytics/
-├── src/                    # Source code
-│   ├── config.py          # Configuration management
-│   ├── fmp_client.py      # API client
-│   └── __init__.py
+├── src/                    # Source code (Python package root)
+│   ├── fmp/               # FMP integration package # --Fixed--
+│   │   ├── config.py      # FMP API key loading from config/api_keys.txt # --Added--
+│   │   ├── client.py      # FMP API client (FMPClient) # --Added--
+│   │   └── tools/         # CLI entrypoints (e.g., fmp_cli.py) # --Added--
 ├── examples/              # Example scripts
 ├── tests/                 # Unit tests
 ├── data/                  # Data storage

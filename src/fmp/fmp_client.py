@@ -8,7 +8,7 @@ Usage:
     from src.fmp_client import FMPClient
 
     client = FMPClient()
-    prices = client.get_historical_prices('AAPL', '2020-01-01', '2024-12-31')
+    prices = client.get_chart('AAPL', '2020-01-01', '2024-12-31')
     fundamentals = client.get_income_statement('AAPL')
 """
 
@@ -19,7 +19,7 @@ from typing import List, Dict, Optional, Union
 import time
 import warnings
 
-from src.config import config
+from .config import config
 
 class FMPClient:
     """

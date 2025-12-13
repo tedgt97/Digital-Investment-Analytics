@@ -17,9 +17,9 @@ class Config:
     """
 
     def __init__(self):
-        # Get the project rook directory
-        self.project_root = Path(__file__).parent.parent
-        self.config_file = self.project_root / 'config' / 'api_keys.txt'
+        # Get the project root directory (repository root, one level above src) # --Fixed--
+        self.project_root = Path(__file__).resolve().parents[2]  # --Fixed--
+        self.config_file = self.project_root / 'config' / 'api_keys.txt'  # --Fixed--
 
         # Load API keys
         self.fmp_api_key = self._load_api_key()
