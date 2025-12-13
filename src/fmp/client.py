@@ -18,7 +18,8 @@ from typing import List, Dict, Optional, Union
 import time
 import warnings
 
-from .config import config  # --Added--
+from .config import config
+from .usage import FMPUsageTracker
 
 
 class FMPClient:
@@ -30,7 +31,8 @@ class FMPClient:
         """Initialize the FMP client."""
         self.api_key = api_key or config.get_api_key()
         self.verbose = verbose
-        self.request_count = 0
+        self.usage_tracker = FMPUsageTracker()
+        self.request_count = self.usage_tracker.count
         self.daily_limit = 250  # Free tier limit
 
         self.session = requests.Session()
@@ -61,6 +63,7 @@ class FMPClient:
             response = self.session.get(url, params=params, timeout=30)
 
             self.request_count += 1
+            self.usage_tracker.increment()
             if self.verbose:
                 print(f"Request {self.request_count}/{self.daily_limit}: {endpoint}")
 
@@ -82,6 +85,17 @@ class FMPClient:
             raise Exception("Connection error - check internet connection")
         except Exception as e:
             raise Exception(f"Request failed for {endpoint}: {str(e)}")
+        
+    # Monitoring Request Usage
+    def get_request_usage(self) -> Dict[str, int]:
+        """Return current request usage and remaining quota for this FMP daily window."""
+        remaining = self.usage_tracker.remaining(self.daily_limit)
+        return {
+            'used': self.request_count,
+            'limit': self.daily_limit,
+            'remaining': remaining
+        }
+
 
     def get_chart(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
         """Get full price and volume data for a stock."""

@@ -55,41 +55,49 @@ pip install -e ".[ml,dev]"
 
 ## 🚀 Quick Start
 
-Most day-to-day experimentation is done in notebooks first; the terminal/CLI is best suited for future bulk downloads once you have a higher API limit. # --Added--
+Most day-to-day experimentation is done in notebooks first; the terminal/CLI is best suited for future bulk downloads once you have a higher API limit. 
 
 ```python
-from fmp.client import FMPClient  # --Fixed--
+from fmp.client import FMPClient  
 
 # Initialize client
 client = FMPClient()
 
 # Get stock data
-prices = client.get_chart("AAPL", "2020-01-01", "2024-12-31")  # --Fixed--
+prices = client.get_chart("AAPL", "2020-01-01", "2024-12-31")  
 fundamentals = client.get_income_statement("AAPL")
 
 print(prices.head())
 ```
 
-### CLI usage (optional, via terminal) # --Added--
+### CLI usage (optional, via terminal) 
 
 After installing in editable mode (`pip install -e .`), you can run the FMP CLI from the project root:
 
 ```bash
-python -m fmp.tools.fmp_cli quote --symbol AAPL  # --Added--
-python -m fmp.tools.fmp_cli chart --symbol AAPL --from 2024-01-01 --to 2024-01-31  # --Added--
+python -m fmp.tools.fmp_cli quote --symbol AAPL  
+python -m fmp.tools.fmp_cli chart --symbol AAPL --from 2024-01-01 --to 2024-01-31  
 ```
 
-Because the free FMP API key has strict limits, the CLI is currently best for small batches; large multi-symbol runs are an ideal future plan once higher limits are available. # --Added--
+Because the free FMP API key has strict limits, the CLI is currently best for small batches; large multi-symbol runs are an ideal future plan once higher limits are available. 
+
+## API Plan Limitations 
+
+The current setup assumes the FMP free tier. Symbol coverage depends on your plan: 
+
+- **Free**: Symbol access limited to the following tickers: AAPL, TSLA, AMZN, MSFT, NVDA, GOOGL, META, NFLX, JPM, V, BAC, PYPL, DIS, T, PFE, COST, INTC, KO, TGT, NKE, SPY, BA, BABA, XOM, WMT, GE, CSCO, VZ, JNJ, CVX, PLTR, SQ, SHOP, SBUX, SOFI, HOOD, RBLX, SNAP, AMD, UBER, FDX, ABBV, ETSY, MRNA, LMT, GM, F, LCID, CCL, DAL, UAL, AAL, TSM, SONY, ET, MRO, COIN, RIVN, RIOT, CPRX, VWO, SPYG, NOK, ROKU, VIAC, ATVI, BIDU, DOCU, ZM, PINS, TLRY, WBA, MGM, NIO, C, GS, WFC, ADBE, PEP, UNH, CARR, HCA, TWTR, BILI, SIRI, FUBO, RKT. 
+- **Starter**: Symbols limited to US exchanges. 
+- **Premium**: Symbols limited to US, UK, and Canada exchanges. 
 
 ## 📊 Project Structure
 
 ```
 Digital-Investment-Analytics/
 ├── src/                    # Source code (Python package root)
-│   ├── fmp/               # FMP integration package # --Fixed--
-│   │   ├── config.py      # FMP API key loading from config/api_keys.txt # --Added--
-│   │   ├── client.py      # FMP API client (FMPClient) # --Added--
-│   │   └── tools/         # CLI entrypoints (e.g., fmp_cli.py) # --Added--
+│   ├── fmp/               # FMP integration package 
+│   │   ├── config.py      # FMP API key loading from config/api_keys.txt 
+│   │   ├── client.py      # FMP API client (FMPClient) 
+│   │   └── tools/         # CLI entrypoints (e.g., fmp_cli.py) 
 ├── examples/              # Example scripts
 ├── tests/                 # Unit tests
 ├── data/                  # Data storage

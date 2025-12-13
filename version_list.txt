@@ -18,4 +18,6 @@ ver.0.1.4
 ver.0.2.0
     - pyproject.toml jeonsanghwa
     - 01_FMPClient.ipynb initiate
+    - usage.py
+        - FMPClient daily count tracing & resetting 
 
