@@ -20,4 +20,5 @@ ver.0.2.0
     - 01_FMPClient.ipynb initiate
     - usage.py
         - FMPClient daily count tracing & resetting 
-
+ver.0.2.1
+    - remove 01_FMPClient.ipynb for duplicate of client.py
