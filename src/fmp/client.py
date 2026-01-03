@@ -78,7 +78,10 @@ class FMPClient:
             return data
 
         except requests.exceptions.HTTPError as e:
-            raise Exception(f"HTTP Error {response.status_code}: {str(e)}")
+            status_code = getattr(getattr(e, "response", None), "status_code", None)  # --Fixed--
+            if status_code is not None:  # --Added--
+                raise Exception(f"HTTP Error {status_code}: {str(e)}")  # --Fixed--
+            raise Exception(f"HTTP Error: {str(e)}")  # --Fixed--
         except requests.exceptions.Timeout:
             raise Exception(f"Request timeout for {endpoint}")
         except requests.exceptions.ConnectionError:
@@ -110,6 +113,10 @@ class FMPClient:
         df["date"] = pd.to_datetime(df["date"])
         df = df.sort_values("date").reset_index(drop=True)
         return df
+
+    def get_historical_prices(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+        """Alias for get_chart (kept for backwards compatibility)."""  # --Added--
+        return self.get_chart(symbol, start_date, end_date)  # --Added--
 
     def get_quote(self, symbol: str) -> Dict:
         """Get real-time stock quote."""

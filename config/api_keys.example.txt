@@ -1,0 +1,6 @@
+# Example API key file (SAFE TO COMMIT)
+#
+# Copy to: config/api_keys.txt
+# Then replace the placeholder below with your real key.
+#
+FMP_API_KEY=your_actual_key_here

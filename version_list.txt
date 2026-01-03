@@ -22,3 +22,5 @@ ver.0.2.0
         - FMPClient daily count tracing & resetting 
 ver.0.2.1
     - remove 01_FMPClient.ipynb for duplicate of client.py
+    - update README.md
+    - create README_DEVELOPMENT.md

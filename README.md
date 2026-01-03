@@ -1,124 +1,85 @@
-# Digital-Investment-Analytics
+# Digital Investment Analytics
 
-Advanced medium to long-term investment analytics using deep learning and ML models.
+Digital Investment Analytics is a multi-asset investment decision system-in-progress that targets medium to long-term horizons.
 
-## 🎯 Features
+The end goal is to forecast probabilistic future return scenarios (not point predictions), quantify both return and downside risk, rank assets using a tunable risk–return utility, and construct a small optimal portfolio (Top-K ≤ 5) that is rebalanced monthly.
 
-- Fetch US stock market data (prices + fundamentals)
-- Feature engineering for ML models
-- Multiple ML/DL model implementations
-- Evaluation and backtesting tools
+Developer setup and CLI usage live in README_DEVELOPMENT.md.
 
-## 📦 Installation
+IMPORTANT: The forecasting models, scenario engine, and portfolio optimizer described below are the target system design (roadmap). The currently implemented code focuses on data collection + persistence.
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/tedgt97/Digital-Investment-Analytics.git
-cd Digital-Investment-Analytics
-```
+## Monthly operating loop (decision clock)
 
-### 2. Create Virtual Environment
-```bash
-python -m venv venv
+This project is designed around a monthly decision clock over a fixed universe (target: ~80–90 stocks + select ETFs).
 
-# Activate
-# Windows:
-venv\Scripts\activate
-# Mac/Linux:
-source venv/bin/activate
-```
+At each rebalance date (month-end, or the first trading day after), the system runs:
 
-### 3. Install Dependencies
+1. Data refresh: update raw market/fundamental data and persist immutable artifacts
+2. Feature build: convert raw data into a monthly modeling table (rolling windows)
+3. Forecasting: generate probabilistic return distributions for 1M / 3M / 6M / 12M
+4. Scenario metrics: derive expected return and tail-risk metrics from sampled scenarios
+5. Decisioning: compute utility scores and rank candidates (long + optional short)
+6. Portfolio construction: select Top-K (≤ 5) and optimize weights (cash allowed)
+7. Execution output: produce a trade list to rebalance to target weights
+8. Risk controls: enforce conservative stop / force-sale rules at monthly boundaries (daily monitoring is a future phase)
 
-**Option A: Using pip**
-```bash
-pip install -r requirements.txt
-```
+## Three-layer architecture (target system)
 
-**Option B: Editable install (recommended for development)**
-```bash
-pip install -e .
-```
+Layer A — Scenario forecasting (deep learning)
+- Input: historical feature windows per asset (e.g., 36–60 months)
+- Output: probabilistic future return distributions across horizons (1/3/6/12 months)
 
-**Option C: With ML dependencies**
-```bash
-pip install -e ".[ml,dev]"
-```
+Layer B — Scenario → risk/return engine
+- Sample many return scenarios from predicted distributions
+- Compute scenario-based metrics (mean return, probability of loss, VaR/ES)
 
-### 4. Configure API Key
+Layer C — Decision making & portfolio construction
+- Convert metrics into a utility score per asset
+- Select Top-K candidates and optimize portfolio weights under constraints
 
-1. Get free API key from [Financial Modeling Prep](https://site.financialmodelingprep.com/developer/docs)
-2. Create `config/api_keys.txt` with:
-   ```
-   FMP_API_KEY=your_actual_key_here
-   ```
+## What exists today
 
-## 🚀 Quick Start
+This repository currently includes an initial data collection layer for US equities using Financial Modeling Prep (FMP):
 
-Most day-to-day experimentation is done in notebooks first; the terminal/CLI is best suited for future bulk downloads once you have a higher API limit. 
+- Python client (`FMPClient`) to fetch price history and fundamentals
+- CLI-first downloads that persist results locally as Parquet/JSON for downstream modeling
+- Lightweight request-usage tracking to help stay within free-tier limits
 
-```python
-from fmp.client import FMPClient  
+This layer is intentionally designed so that downstream ML/optimization can read reproducible artifacts from disk.
 
-# Initialize client
-client = FMPClient()
+## Roadmap (Phases 1–4)
 
-# Get stock data
-prices = client.get_chart("AAPL", "2020-01-01", "2024-12-31")  
-fundamentals = client.get_income_statement("AAPL")
+### Phase 1 — Data foundation + baseline signals
 
-print(prices.head())
-```
+- Stable ingestion and immutable storage of market data
+- Monthly modeling table (rolling features, consistent labels)
+- Baseline signals for sanity checks + benchmarking (before deep learning)
+- Walk-forward monthly backtest harness (benchmark vs SPY)
 
-### CLI usage (optional, via terminal) 
+### Phase 2 — Deep quantile model + scenario generation
 
-After installing in editable mode (`pip install -e .`), you can run the FMP CLI from the project root:
+- Multi-horizon quantile regression model (1/3/6/12 months)
+- Quantile → empirical distribution conversion and scenario sampling
+- Scenario-based metrics (expected return, probability of loss, VaR/ES)
+- Calibration and evaluation (pinball loss, backtest comparisons)
 
-```bash
-python -m fmp.tools.fmp_cli quote --symbol AAPL  
-python -m fmp.tools.fmp_cli chart --symbol AAPL --from 2024-01-01 --to 2024-01-31  
-```
+### Phase 3 — Portfolio optimization + long/short decision engine
 
-Because the free FMP API key has strict limits, the CLI is currently best for small batches; large multi-symbol runs are an ideal future plan once higher limits are available. 
+- Utility-based ranking with tunable risk preferences
+- Long/short handling with conservative eligibility gates
+- Scenario-based portfolio optimization with constraints (gross exposure, cash, concentration penalties)
+- Trade list generation with transaction-cost / tax drag assumptions
 
-## API Plan Limitations 
+### Phase 4 — Dynamic stop / force-sale optimization (future)
 
-The current setup assumes the FMP free tier. Symbol coverage depends on your plan: 
+- Simulate future price paths and evaluate candidate stop levels
+- Choose stop levels that maximize expected utility under scenarios
+- Upgrade risk controls from monthly checks to daily monitoring
 
-- **Free**: Symbol access limited to the following tickers: AAPL, TSLA, AMZN, MSFT, NVDA, GOOGL, META, NFLX, JPM, V, BAC, PYPL, DIS, T, PFE, COST, INTC, KO, TGT, NKE, SPY, BA, BABA, XOM, WMT, GE, CSCO, VZ, JNJ, CVX, PLTR, SQ, SHOP, SBUX, SOFI, HOOD, RBLX, SNAP, AMD, UBER, FDX, ABBV, ETSY, MRNA, LMT, GM, F, LCID, CCL, DAL, UAL, AAL, TSM, SONY, ET, MRO, COIN, RIVN, RIOT, CPRX, VWO, SPYG, NOK, ROKU, VIAC, ATVI, BIDU, DOCU, ZM, PINS, TLRY, WBA, MGM, NIO, C, GS, WFC, ADBE, PEP, UNH, CARR, HCA, TWTR, BILI, SIRI, FUBO, RKT. 
-- **Starter**: Symbols limited to US exchanges. 
-- **Premium**: Symbols limited to US, UK, and Canada exchanges. 
+## For developers
 
-## 📊 Project Structure
+- See README_DEVELOPMENT.md for CLI-first quick start, configuration, data output layout, and testing notes.
 
-```
-Digital-Investment-Analytics/
-├── src/                    # Source code (Python package root)
-│   ├── fmp/               # FMP integration package 
-│   │   ├── config.py      # FMP API key loading from config/api_keys.txt 
-│   │   ├── client.py      # FMP API client (FMPClient) 
-│   │   └── tools/         # CLI entrypoints (e.g., fmp_cli.py) 
-├── examples/              # Example scripts
-├── tests/                 # Unit tests
-├── data/                  # Data storage
-│   ├── raw/              # Raw API data
-│   └── processed/        # Cleaned data
-├── models/               # Saved ML models
-├── notebooks/            # Jupyter notebooks
-└── config/               # Configuration files
+## Author
 
-```
-
-## 🧪 Testing
-
-```bash
-pytest tests/
-```
-
-## 📝 License
-
-MIT License
-
-## 👤 Author
-
-Your Name - [GitHub](https://github.com/tedgt97)
+tedgt97 - https://github.com/tedgt97

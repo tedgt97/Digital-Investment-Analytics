@@ -27,7 +27,7 @@ def _get_window_start(dt: datetime) -> datetime:
         # After today's 3 PM: window starts today at 3 PM.
         window_date = dt_eastern.date()
 
-    return datetime. combine(window_date, time(15, 0), tzinfo=EASTERN_TZ)
+    return datetime.combine(window_date, time(15, 0), tzinfo=EASTERN_TZ)  # --Fixed--
 
 @dataclass
 class UsageState:
