@@ -50,6 +50,9 @@ models/*.onnx
 *.swo
 *~
 
+# Tooling / local history
+.specstory/
+
 # OS
 .DS_Store
 Thumbs.db
