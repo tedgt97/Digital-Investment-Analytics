@@ -24,3 +24,5 @@ ver.0.2.1
     - remove 01_FMPClient.ipynb for duplicate of client.py
     - update README.md
     - create README_DEVELOPMENT.md
+ver.0.2.2
+    - Pivot to Gold data collection

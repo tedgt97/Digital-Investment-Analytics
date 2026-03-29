@@ -156,21 +156,3 @@ class FMPClient:
             raise Exception(f"No profile found for {symbol}")
 
         return data[0] if isinstance(data, list) else data
-
-    # The following endpoints are not available for the free tier but left
-    # as references for future extension. # --Added--
-
-    # def get_stock_list(self) -> pd.DataFrame:
-    #     """Get a comprehensive list of financial symbols."""
-    #     endpoint = "/stock-list"
-    #     data = self._make_request(endpoint)
-    #     if not data:
-    #         raise Exception("No stock list data found")
-    #     return pd.DataFrame(data)
-
-    # def get_multiple_quotes(self, symbols: List[str]) -> pd.DataFrame:
-    #     """Get quotes for multiple stocks at once."""
-    #     symbols_str = ",".join(symbols)
-    #     endpoint = f"/quote?symbol={symbols_str}"
-    #     data = self._make_request(endpoint)
-    #     return pd.DataFrame(data)

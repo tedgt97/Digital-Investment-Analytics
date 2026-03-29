@@ -20,6 +20,39 @@ Roadmap (high-level):
 
 IMPORTANT: The sections below under "Target design" are not implemented yet. They define the development specification so we can implement consistently.
 
+## Project structure
+
+```
+Digital-Investment-Analytics/
+├── src/
+│   └── fmp/                   # FMP integration package
+│       ├── __init__.py         # Exports: config, FMPClient (v0.1.1)
+│       ├── config.py           # API key loading from config/api_keys.txt
+│       ├── client.py           # FMPClient — HTTP client for FMP stable API
+│       ├── usage.py            # Daily request-usage tracker (resets 3 PM ET)
+│       └── tools/
+│           └── fmp_cli.py      # CLI: quote, chart, income, profile
+├── tests/
+│   ├── test_fmp_client.py      # Live-API tests for FMPClient methods
+│   └── test_setup.py           # Quick setup verification script
+├── notebooks/
+│   └── 01_FMPClient.ipynb      # Interactive exploration of FMPClient
+├── data/
+│   ├── raw/                    # Immutable CLI outputs (Parquet/JSON)
+│   ├── processed/              # Cleaned / feature-engineered tables
+│   └── plans/                  # Project planning docs
+├── models/                     # Saved ML model artifacts (empty for now)
+├── config/
+│   ├── api_keys.txt            # YOUR key here (git-ignored)
+│   ├── api_keys.example.txt    # Safe-to-commit template
+│   └── fmp_usage.json          # Persisted daily request count
+├── .github/
+│   └── copilot-instructions.md # AI agent orientation for this repo
+├── pyproject.toml              # Package metadata + optional extras
+├── README.md                   # Investor-facing overview + roadmap
+└── README_DEV.md               # This file — developer guide + target spec
+```
+
 ## Setup
 
 ### 1) Create and activate a virtual environment
@@ -99,11 +132,11 @@ For monthly rebalances, prefer saving outputs under a rebalance run “as-of” 
 - reproduce model training inputs
 - compare revisions (re-downloads) over time
 
-A simple convention:
+A simple convention (not yet implemented in the CLI; manual via `--out`):
 
 - `data/raw/<endpoint>/<SYMBOL>/asof=YYYY-MM-DD/<files...>`
 
-You can implement this by passing `--out` to the CLI and choosing a dated folder.
+You can approximate this today by passing `--out data/raw/<endpoint>/asof=YYYY-MM-DD` to the CLI. Native support is planned for a future CLI update.
 
 ## Target design (roadmap): monthly decision clock
 
@@ -235,7 +268,48 @@ Notes:
 - Tests call live endpoints and require a valid API key + internet.
 - Compatibility alias: `get_historical_prices(...)` is supported as an alias of `get_chart(...)`.
 
+## Technology stack
+
+Implemented now:
+- Python 3.8+
+- requests, pandas, numpy
+- Parquet storage (via pyarrow)
+
+Target (roadmap):
+- PyTorch (quantile regression model)
+- Pandas / Polars (feature engineering)
+- NumPy / SciPy (scenario sampling, metrics)
+- CVXPY (optional, portfolio weight optimization)
+- matplotlib / seaborn (evaluation plots)
+
+## Backtesting specification (target)
+
+Method: walk-forward monthly backtest.
+
+Steps per month:
+1. Predict return distributions (Layer A)
+2. Generate scenarios and compute metrics (Layer B)
+3. Rank assets and optimize portfolio (Layer C)
+4. Apply transaction costs and tax assumptions
+5. Record portfolio return for the month
+
+Evaluation metrics:
+- CAGR
+- Annualized volatility
+- Sharpe ratio / Sortino ratio
+- Maximum drawdown
+- Portfolio turnover
+- Benchmark comparison (SPY buy-and-hold)
+
+## FMP API plan limitations
+
+The current setup assumes the FMP free tier. Symbol coverage depends on your plan:
+
+- **Free**: Limited to ~90 tickers: AAPL, TSLA, AMZN, MSFT, NVDA, GOOGL, META, NFLX, JPM, V, BAC, PYPL, DIS, T, PFE, COST, INTC, KO, TGT, NKE, SPY, BA, BABA, XOM, WMT, GE, CSCO, VZ, JNJ, CVX, PLTR, SQ, SHOP, SBUX, SOFI, HOOD, RBLX, SNAP, AMD, UBER, FDX, ABBV, ETSY, MRNA, LMT, GM, F, LCID, CCL, DAL, UAL, AAL, TSM, SONY, ET, MRO, COIN, RIVN, RIOT, CPRX, VWO, SPYG, NOK, ROKU, VIAC, ATVI, BIDU, DOCU, ZM, PINS, TLRY, WBA, MGM, NIO, C, GS, WFC, ADBE, PEP, UNH, CARR, HCA, TWTR, BILI, SIRI, FUBO, RKT
+- **Starter**: US exchanges
+- **Premium**: US, UK, and Canada exchanges
+
 ## Known limitations (current)
 
 - The project is still in the data-collection stage; forecasting/models/portfolio code is roadmap work.
-- Free-tier symbols may be restricted by FMP plan.
+- Free-tier symbols may be restricted by FMP plan (see list above).

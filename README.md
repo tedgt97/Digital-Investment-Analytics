@@ -4,7 +4,7 @@ Digital Investment Analytics is a multi-asset investment decision system-in-prog
 
 The end goal is to forecast probabilistic future return scenarios (not point predictions), quantify both return and downside risk, rank assets using a tunable risk–return utility, and construct a small optimal portfolio (Top-K ≤ 5) that is rebalanced monthly.
 
-Developer setup and CLI usage live in README_DEVELOPMENT.md.
+Developer setup and CLI usage live in README_DEV.md.
 
 IMPORTANT: The forecasting models, scenario engine, and portfolio optimizer described below are the target system design (roadmap). The currently implemented code focuses on data collection + persistence.
 
@@ -39,22 +39,32 @@ Layer C — Decision making & portfolio construction
 
 ## What exists today
 
-This repository currently includes an initial data collection layer for US equities using Financial Modeling Prep (FMP):
+Data collection layer for US equities using Financial Modeling Prep (FMP):
 
-- Python client (`FMPClient`) to fetch price history and fundamentals
+- Python client (`FMPClient`) — verified working for price history, quotes, income statements, and company profiles
 - CLI-first downloads that persist results locally as Parquet/JSON for downstream modeling
 - Lightweight request-usage tracking to help stay within free-tier limits
 
-This layer is intentionally designed so that downstream ML/optimization can read reproducible artifacts from disk.
+Multi-source data architecture (in progress) for gold trend analysis:
+
+- **FRED** — core macro data: interest rates, treasury yields, CPI, FX, VIX (~25 series, unlimited free calls)
+- **Alpha Vantage** — gold/silver prices, commodities, GDP (25 free calls/day)
+- **yfinance** — gold futures/ETF with volume, equity indices (no API key needed)
+- **FMP** — reserved for US stock fundamentals in later expansion
+
+All layers are designed so that downstream ML/optimization can read reproducible artifacts from disk.
 
 ## Roadmap (Phases 1–4)
 
 ### Phase 1 — Data foundation + baseline signals
 
-- Stable ingestion and immutable storage of market data
+Starting with **Gold** as the first asset before expanding to the full stock universe.
+
+- Multi-source data ingestion (FRED, Alpha Vantage, yfinance) and immutable storage
+- Gold-focused feature set: price, rates, FX, inflation, VIX, commodities, central bank activity
 - Monthly modeling table (rolling features, consistent labels)
 - Baseline signals for sanity checks + benchmarking (before deep learning)
-- Walk-forward monthly backtest harness (benchmark vs SPY)
+- Walk-forward monthly backtest harness (benchmark vs buy-and-hold gold)
 
 ### Phase 2 — Deep quantile model + scenario generation
 
@@ -76,9 +86,26 @@ This layer is intentionally designed so that downstream ML/optimization can read
 - Choose stop levels that maximize expected utility under scenarios
 - Upgrade risk controls from monthly checks to daily monitoring
 
+## Short-term to-do list
+
+- [ ] Register for FRED API key and Alpha Vantage API key
+- [ ] Build FRED client (`src/fred/`) — macro, rates, FX, VIX
+- [ ] Build Alpha Vantage client (`src/alphavantage/`) — gold price, commodities, GDP
+- [ ] Add yfinance wrapper (`src/yfinance_/`) — gold volume, equity indices
+- [ ] Initial gold data pull: full history for all gold-relevant series
+- [ ] Consolidate raw data into ML-ready panel (`data/processed/`)
+- [ ] EDA notebook: gold price vs macro features exploration
+- [ ] Feature engineering: rolling windows, returns, regime indicators
+- [ ] First deep learning model: gold return forecasting
+- [ ] Expand data sources and models to US equities
+
 ## For developers
 
-- See README_DEVELOPMENT.md for CLI-first quick start, configuration, data output layout, and testing notes.
+- See README_DEV.md for CLI-first quick start, configuration, data output layout, and testing notes.
+
+## License
+
+MIT
 
 ## Author
 

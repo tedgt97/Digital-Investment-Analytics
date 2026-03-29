@@ -47,7 +47,7 @@ def main():
         
         # Test 4: Check project structure
         print("\n[Test 4] Checking project structure...")
-        required_dirs = ['src', 'config', 'data', 'tests', 'models', 'examples']
+        required_dirs = ['src', 'config', 'data', 'tests', 'models']  # --Fixed-- # removed nonexistent 'examples'
         for dir_name in required_dirs:
             dir_path = project_root / dir_name
             if dir_path.exists():
