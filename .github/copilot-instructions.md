@@ -64,6 +64,16 @@ These notes orient AI coding agents to this repo's architecture, workflows, and 
 - Maintain return-type conventions (DataFrame vs dict) and Parquet/JSON persistence patterns when adding new endpoints/CLI commands.
 - Tests call real endpoints; design new tests accordingly or mark/network-isolation explicitly if you refactor.
 
+## Current Direction (ver.0.2.2)
+- The project has pivoted to **Gold as the first asset** before expanding to the full US stock universe.
+- Multi-source data architecture planned:
+  - **FRED** — macro data: interest rates, treasury yields, CPI, FX, VIX (~25 series, unlimited free calls)
+  - **Alpha Vantage** — gold/silver prices, commodities, GDP (25 free calls/day)
+  - **yfinance** — gold futures/ETF with volume, equity indices (no API key)
+  - **FMP** — reserved for US stock fundamentals in later expansion
+- New client packages will follow the same patterns as `src/fmp/`: dedicated `client.py`, `config.py`, CLI tool, Parquet/JSON persistence.
+- Immediate next steps: register FRED + Alpha Vantage API keys, build `src/fred/` and `src/alphavantage/` clients, add yfinance wrapper.
+
 ## Quick References
 - Files to study first: `src/fmp/config.py`, `src/fmp/client.py`, `src/fmp/usage.py`, `src/fmp/tools/fmp_cli.py`, `tests/test_fmp_client.py`.
 - Data directories: `data/raw/` for fetched artifacts; `data/processed/` for curated datasets; `models/` for trained artifacts.

@@ -1,6 +1,8 @@
 # Example API key file (SAFE TO COMMIT)
 #
 # Copy to: config/api_keys.txt
-# Then replace the placeholder below with your real key.
+# Then replace the placeholders below with your real keys.
 #
 FMP_API_KEY=your_actual_key_here
+FRED_API_KEY=your_actual_key_here
+ALPHA_VANTAGE_API_KEY=your_actual_key_here
