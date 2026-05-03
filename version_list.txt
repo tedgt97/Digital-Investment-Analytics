@@ -29,3 +29,4 @@ ver.0.2.2
     - FRED config/client/test complete
     - FRED CLI complete
     - update README.md and README_DEV.md for FRED workflow
+    * Start collecting macro variables using CLI

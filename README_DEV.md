@@ -126,7 +126,7 @@ python -m fmp.tools.fmp_cli profile --symbol AAPL
 python -m fmp.tools.fmp_cli chart --symbol AAPL --from 2024-01-01 --to 2024-01-31
 python -m fmp.tools.fmp_cli income --symbol AAPL --period annual --limit 5
 python -m fred.tools.fred_cli series --id FEDFUNDS
-python -m fred.tools.fred_cli observations --id FEDFUNDS --from 2024-01-01 --to 2024-12-31
+python -m fred.tools.fred_cli observations --id FEDFUNDS --from 2024-01-01 --to 2024-12-31(Optional)
 ```
 
 ### Output layout

@@ -36,7 +36,7 @@ def main():
     )
     p_observations.add_argument("--id", dest="series_id", required=True, help="FRED series id")
     p_observations.add_argument("--from", dest="start", required=True, help="start date YYYY-MM-DD")
-    p_observations.add_argument("--to", dest="end", required=True, help="end date YYYY-MM-DD")
+    p_observations.add_argument("--to", dest="end", required=False, help="end date YYYY-MM-DD (default: latest available)")
     p_observations.add_argument(
         "--frequency",
         choices=["d", "w", "bw", "m", "q", "sa", "a"],
@@ -67,9 +67,10 @@ def main():
             args.frequency,
             args.aggregation_method,
         )
+        end_label = args.end or df["date"].max().date().isoformat()
         save_df(
             df,
-            out_root / "fred-observations" / args.series_id / f"{args.start}_{args.end}.parquet",
+            out_root / "fred-observations" / args.series_id / f"{args.start}_{end_label}.parquet",
         )
         print(f"saved observations rows = {len(df)}")
 

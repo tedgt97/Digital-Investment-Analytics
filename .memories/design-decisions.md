@@ -14,6 +14,14 @@
   - yfinance: gold futures/ETF volume, equity indices (no key)
   - FMP: reserved for US stock fundamentals later
 
+## Gold Macro Feature Priorities
+- Highest-priority FRED blocks for gold: **real yields**, **inflation expectations**, **nominal yields/policy rate**, **USD strength**, and **risk stress**
+- Secondary FRED blocks: **realized inflation**, **liquidity / central bank balance sheet**, and **growth / labor market activity**
+- Recommended first FRED core set for gold modeling:
+  - `DFII10`, `T10YIE`, `FEDFUNDS`, `DGS10`, `DTWEXBGS`, `VIXCLS`, `CPIAUCSL`, `WALCL`, `INDPRO`, `UNRATE`
+- Pull raw observations through the CLI and persist tabular data as **Parquet**; keep metadata as **JSON**
+- For monthly deep-learning modeling, prefer **15+ years** of overlapping history, with **20+ years** preferred where available; 5 years is acceptable only for quick baseline exploration, not the main deep model
+
 ## Data Conventions
 - Raw data stored immutably as Parquet (tabular) / JSON (single-entity) in `data/raw/`
 - New clients follow `src/fmp/` pattern: `client.py`, `config.py`, CLI, Parquet/JSON persistence
