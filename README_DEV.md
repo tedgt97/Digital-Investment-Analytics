@@ -9,8 +9,10 @@ This document is for developers.
 
 Implemented today:
 - FMP client (`FMPClient`) for prices + fundamentals
+- FRED client (`FREDClient`) for macro series metadata + observations
 - CLI-first data downloads to local disk (Parquet for tabular, JSON for single-entity)
-- Basic request usage tracking persisted to `config/fmp_usage.json`
+- Basic request usage tracking persisted to `config/fmp_usage.json` for FMP
+- Live-API tests for both FMP and FRED clients
 
 Roadmap (high-level):
 - Phase 1: data foundation + baseline signals
@@ -25,15 +27,22 @@ IMPORTANT: The sections below under "Target design" are not implemented yet. The
 ```
 Digital-Investment-Analytics/
 ├── src/
-│   └── fmp/                   # FMP integration package
-│       ├── __init__.py         # Exports: config, FMPClient (v0.1.1)
-│       ├── config.py           # API key loading from config/api_keys.txt
-│       ├── client.py           # FMPClient — HTTP client for FMP stable API
-│       ├── usage.py            # Daily request-usage tracker (resets 3 PM ET)
+│   ├── fmp/                    # FMP integration package
+│   │   ├── __init__.py         # Exports: config, FMPClient
+│   │   ├── config.py           # API key loading from config/api_keys.txt
+│   │   ├── client.py           # FMPClient — HTTP client for FMP stable API
+│   │   ├── usage.py            # Daily request-usage tracker (resets 3 PM ET)
+│   │   └── tools/
+│   │       └── fmp_cli.py      # CLI: quote, chart, income, profile
+│   └── fred/                   # FRED integration package
+│       ├── __init__.py         # Exports: config, FREDClient
+│       ├── config.py           # FRED API key loading from config/api_keys.txt
+│       ├── client.py           # FREDClient — macro series metadata + observations
 │       └── tools/
-│           └── fmp_cli.py      # CLI: quote, chart, income, profile
+│           └── fred_cli.py     # CLI: series, observations
 ├── tests/
 │   ├── test_fmp_client.py      # Live-API tests for FMPClient methods
+│   ├── test_fred_client.py     # Live-API tests for FREDClient methods
 │   └── test_setup.py           # Quick setup verification script
 ├── notebooks/
 │   └── 01_FMPClient.ipynb      # Interactive exploration of FMPClient
@@ -89,7 +98,7 @@ pip install -e ".[ml,dev,storage]"
 
 ## API key configuration (file-based)
 
-The project loads the FMP API key from a file at:
+The project loads API keys from a file at:
 
 - `config/api_keys.txt`
 
@@ -97,6 +106,8 @@ Format:
 
 ```text
 FMP_API_KEY=your_actual_key_here
+FRED_API_KEY=your_actual_key_here
+ALPHA_VANTAGE_API_KEY=your_actual_key_here
 ```
 
 Notes:
@@ -114,6 +125,8 @@ python -m fmp.tools.fmp_cli quote --symbol AAPL
 python -m fmp.tools.fmp_cli profile --symbol AAPL
 python -m fmp.tools.fmp_cli chart --symbol AAPL --from 2024-01-01 --to 2024-01-31
 python -m fmp.tools.fmp_cli income --symbol AAPL --period annual --limit 5
+python -m fred.tools.fred_cli series --id FEDFUNDS
+python -m fred.tools.fred_cli observations --id FEDFUNDS --from 2024-01-01 --to 2024-12-31
 ```
 
 ### Output layout
@@ -124,6 +137,8 @@ Default output root: `data/raw`
 - Profile (JSON): `data/raw/profile/<SYMBOL>/<timestamp>.json`
 - Chart (Parquet): `data/raw/chart/<SYMBOL>/<from>_<to>.parquet`
 - Income statement (Parquet): `data/raw/income-statement/<SYMBOL>/<period>_<timestamp>.parquet`
+- FRED series metadata (JSON): `data/raw/fred-series/<SERIES_ID>/<timestamp>.json`
+- FRED observations (Parquet): `data/raw/fred-observations/<SERIES_ID>/<from>_<to>.parquet`
 
 ### Accumulating data by rebalance date (recommended convention)
 

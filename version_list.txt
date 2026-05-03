@@ -26,4 +26,6 @@ ver.0.2.1
     - create README_DEVELOPMENT.md
 ver.0.2.2
     - Pivot to Gold data collection
-    - FRED config/client.py
+    - FRED config/client/test complete
+    - FRED CLI complete
+    - update README.md and README_DEV.md for FRED workflow

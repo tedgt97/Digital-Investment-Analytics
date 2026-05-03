@@ -39,17 +39,19 @@ Layer C — Decision making & portfolio construction
 
 ## What exists today
 
-Data collection layer for US equities using Financial Modeling Prep (FMP):
+Implemented data collection layers today:
 
-- Python client (`FMPClient`) — verified working for price history, quotes, income statements, and company profiles
+- **FMP** — Python client (`FMPClient`) for price history, quotes, income statements, and company profiles
+- **FRED** — Python client (`FREDClient`) for macro series metadata + observations
 - CLI-first downloads that persist results locally as Parquet/JSON for downstream modeling
-- Lightweight request-usage tracking to help stay within free-tier limits
+- Live API tests covering both FMP and FRED clients
+- Lightweight request-usage tracking to help stay within FMP free-tier limits
 
-Multi-source data architecture (in progress) for gold trend analysis:
+Multi-source data architecture for gold trend analysis:
 
-- **FRED** — core macro data: interest rates, treasury yields, CPI, FX, VIX (~25 series, unlimited free calls)
-- **Alpha Vantage** — gold/silver prices, commodities, GDP (25 free calls/day)
-- **yfinance** — gold futures/ETF with volume, equity indices (no API key needed)
+- **FRED** — implemented foundation for core macro data: interest rates, treasury yields, CPI, FX, VIX
+- **Alpha Vantage** — planned for gold/silver prices, commodities, GDP (25 free calls/day)
+- **yfinance** — planned for gold futures/ETF with volume, equity indices (no API key needed)
 - **FMP** — reserved for US stock fundamentals in later expansion
 
 All layers are designed so that downstream ML/optimization can read reproducible artifacts from disk.
@@ -88,8 +90,6 @@ Starting with **Gold** as the first asset before expanding to the full stock uni
 
 ## Short-term to-do list
 
-- [ ] Register for FRED API key and Alpha Vantage API key
-- [ ] Build FRED client (`src/fred/`) — macro, rates, FX, VIX
 - [ ] Build Alpha Vantage client (`src/alphavantage/`) — gold price, commodities, GDP
 - [ ] Add yfinance wrapper (`src/yfinance_/`) — gold volume, equity indices
 - [ ] Initial gold data pull: full history for all gold-relevant series

@@ -4,7 +4,7 @@ Federal Reserve Bank of ST. Louis API Client
 This is the main interface to fetch core macroeconomic data from FRED.
 """
 
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional, cast
 import time
 
 import pandas as pd
@@ -13,7 +13,7 @@ import requests
 from .config import config
 
 class FREDClient:
-    """ Client for interacting with the FRED API."""
+    """Client for interacting with the FRED API."""
 
     BASE_URL = "https://api.stlouisfed.org/fred"
 
@@ -22,26 +22,30 @@ class FREDClient:
         self.verbose = verbose
         self.session = requests.Session()
         self.session.headers.update(
-            {"User-Agent": "Digital-Investment_Analytics"}
+            {"User-Agent": "Digital-Investment-Analytics/0.2.2"}
         )
 
         if self.verbose:
             print("FRED Client initialized")
         
-    def _make_request(self, endpoint: str, params: Optional[dict] = None) -> Dict:
+    def _make_request(self, endpoint: str, params: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Internal method to make FRED API requests with error handling."""
-        if params is None:
-            params = {}
+        request_params: Dict[str, str] = dict(params or {})
 
-        params["api_key"] = self.api_key
-        params["file_type"] = "json"
+        request_params["api_key"] = self.api_key
+        request_params["file_type"] = "json"
 
         url = f"{self.BASE_URL}{endpoint}"
 
         try:
-            response = self.session.get(url, params=params, timeout=30)
+            response = self.session.get(url, params=request_params, timeout=30)
             response.raise_for_status()
-            data = response.json()
+            payload = response.json()
+
+            if not isinstance(payload, dict):
+                raise Exception(f"Unexpected response format for {endpoint}")
+            
+            data = cast(Dict[str, Any], payload)
 
             if "error_code" in data:
                 raise Exception(
@@ -64,10 +68,10 @@ class FREDClient:
         except Exception as e:  
             raise Exception(f"Request failed for {endpoint}: {str(e)}")  
         
-    def get_series(self, series_id: str) -> Dict:
+    def get_series(self, series_id: str) -> Dict[str, Any]:
         """Get metadata for a FRED series."""
         data = self._make_request("/series", {"series_id": series_id})
-        series_list = data.get("seriess", [])
+        series_list = cast(List[Dict[str, Any]], data.get("seriess", []))
         if not series_list:
             raise Exception(f"No series metadata found for {series_id}")
         return series_list[0]
@@ -81,7 +85,7 @@ class FREDClient:
             aggregation_method: Optional[str] = None,
     ) -> pd.DataFrame:
         """Get time-series observations for a FRED series."""
-        params = {"series_id": series_id}
+        params: Dict[str, str] = {"series_id": series_id}
 
         if start_date:
             params["observation_start"] = start_date
@@ -93,7 +97,7 @@ class FREDClient:
             params["aggregation_method"] = aggregation_method
         
         data = self._make_request("/series/observations", params)
-        observations = data.get("observations", [])
+        observations = cast(List[Dict[str, Any]], data.get("observations", []))
 
         if not observations:
             raise Exception(f"No observations found for {series_id}")
