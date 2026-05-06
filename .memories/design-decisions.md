@@ -1,10 +1,17 @@
 # Design Decisions
 
 ## Architecture
-- **Monthly decision clock** over fixed universe (~80-90 tickers) — rebalance at month-end
+- **Refreshable decision clock** over a gold-first universe, with scheduled and event-driven reruns
 - **3-layer architecture**: Layer A (forecasting) → Layer B (scenario metrics) → Layer C (portfolio construction)
 - **Quantile regression** (Option A2) chosen as MVP over parametric Student-t
-- Horizons: 1M / 3M / 6M / 12M with separate heads per horizon
+- MVP horizons: 1W / 2W / 1M / 3M with longer-term horizons added later
+
+## Updated Objective Direction
+- Primary near-term target is **short-to-medium-horizon** investment prediction, with long-term horizons deferred until later
+- Predictions should be refreshable whenever data is updated: weekly, biweekly, or event-driven after important news
+- The system should tolerate **asynchronous data refreshes** where some features update daily and others remain unchanged until the next official release
+- Operationally, this favors a **daily as-of processed dataset** as the main prediction layer, while monthly tables remain useful for sandbox research and backtests
+- Prediction outputs should be versioned over time so later refreshes can be compared against prior forecasts to support buy / sell / hold decisions
 
 ## Gold Pivot (ver.0.2.2)
 - Gold is the **first asset** before expanding to US stock universe
@@ -27,6 +34,9 @@
 - New clients follow `src/fmp/` pattern: `client.py`, `config.py`, CLI, Parquet/JSON persistence
 - All HTTP calls go through a central `_make_request` method per client
 - Return types: DataFrame for series data, dict for single-entity
+- Keep raw sources at their native frequency and timestamp granularity; frequency harmonization belongs in the processed feature layer, not the raw layer
+- For updated inference, prefer an **as-of** processed table (likely daily) that uses the latest known macro values plus fresh market/news/text features
+- A separate monthly processed table is still useful for research, backtests, and monthly decision models
 
 ## API Key Management
 - File-based: `config/api_keys.txt` with `KEY_NAME=value` lines

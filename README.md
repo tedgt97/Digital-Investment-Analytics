@@ -1,33 +1,33 @@
 # Digital Investment Analytics
 
-Digital Investment Analytics is a multi-asset investment decision system-in-progress that targets medium to long-term horizons.
+Digital Investment Analytics is a multi-asset investment decision system-in-progress that targets short to medium-term horizons first, with longer-horizon extensions planned later.
 
-The end goal is to forecast probabilistic future return scenarios (not point predictions), quantify both return and downside risk, rank assets using a tunable risk–return utility, and construct a small optimal portfolio (Top-K ≤ 5) that is rebalanced monthly.
+The end goal is to forecast probabilistic future return scenarios (not point predictions), quantify both return and downside risk, rank assets using a tunable risk-return utility, refresh those rankings as new data arrives, and eventually construct a small optimal portfolio (Top-K ≤ 5).
 
 Developer setup and CLI usage live in README_DEV.md.
 
 IMPORTANT: The forecasting models, scenario engine, and portfolio optimizer described below are the target system design (roadmap). The currently implemented code focuses on data collection + persistence.
 
-## Monthly operating loop (decision clock)
+## Refreshable operating loop (decision clock)
 
-This project is designed around a monthly decision clock over a fixed universe (target: ~80–90 stocks + select ETFs).
+This project is being refocused around a refreshable decision clock for short/medium-horizon predictions. The main operational modeling layer will likely be a daily as-of dataset, while monthly tables remain useful for research and slower backtests.
 
-At each rebalance date (month-end, or the first trading day after), the system runs:
+At each scheduled or event-driven refresh date, the system runs:
 
-1. Data refresh: update raw market/fundamental data and persist immutable artifacts
-2. Feature build: convert raw data into a monthly modeling table (rolling windows)
-3. Forecasting: generate probabilistic return distributions for 1M / 3M / 6M / 12M
+1. Data refresh: update newly available raw market, macro, and later semantic data and persist immutable artifacts
+2. Feature build: convert raw data into an as-of modeling table using the latest known values at that timestamp
+3. Forecasting: generate probabilistic future return distributions for 1W / 2W / 1M / 3M
 4. Scenario metrics: derive expected return and tail-risk metrics from sampled scenarios
-5. Decisioning: compute utility scores and rank candidates (long + optional short)
-6. Portfolio construction: select Top-K (≤ 5) and optimize weights (cash allowed)
-7. Execution output: produce a trade list to rebalance to target weights
-8. Risk controls: enforce conservative stop / force-sale rules at monthly boundaries (daily monitoring is a future phase)
+5. Decisioning: compute utility scores, rank candidates, and compare the new output with the prior saved prediction snapshot
+6. Portfolio construction: select Top-K (≤ 5) and optimize weights when portfolio construction becomes active
+7. Execution output: produce a reproducible decision bundle for buy / sell / hold review
+8. Risk controls: keep conservative overlays and later expand toward richer intraperiod monitoring
 
 ## Three-layer architecture (target system)
 
 Layer A — Scenario forecasting (deep learning)
 - Input: historical feature windows per asset (e.g., 36–60 months)
-- Output: probabilistic future return distributions across horizons (1/3/6/12 months)
+- Output: probabilistic future return distributions across short/medium horizons (1W / 2W / 1M / 3M first; longer-term later)
 
 Layer B — Scenario → risk/return engine
 - Sample many return scenarios from predicted distributions
@@ -49,28 +49,31 @@ Implemented data collection layers today:
 
 Multi-source data architecture for gold trend analysis:
 
-- **FRED** — implemented foundation for core macro data: interest rates, treasury yields, CPI, FX, VIX
+- **FRED** — implemented starter macro foundation for core gold features: rates, treasury yields, CPI, FX, VIX
 - **Alpha Vantage** — planned for gold/silver prices, commodities, GDP (25 free calls/day)
 - **yfinance** — planned for gold futures/ETF with volume, equity indices (no API key needed)
 - **FMP** — reserved for US stock fundamentals in later expansion
+
+The current FRED macro starter set is treated as sufficient to begin the next phase: Alpha Vantage gold-series ingestion and the first baseline deep learning model.
 
 All layers are designed so that downstream ML/optimization can read reproducible artifacts from disk.
 
 ## Roadmap (Phases 1–4)
 
-### Phase 1 — Data foundation + baseline signals
+### Phase 1 — Data foundation + first gold model
 
 Starting with **Gold** as the first asset before expanding to the full stock universe.
 
-- Multi-source data ingestion (FRED, Alpha Vantage, yfinance) and immutable storage
-- Gold-focused feature set: price, rates, FX, inflation, VIX, commodities, central bank activity
-- Monthly modeling table (rolling features, consistent labels)
-- Baseline signals for sanity checks + benchmarking (before deep learning)
-- Walk-forward monthly backtest harness (benchmark vs buy-and-hold gold)
+- Use the current FRED macro starter set as the baseline macro foundation
+- Add Alpha Vantage gold/silver/commodity series and later yfinance market context
+- Build a daily as-of processed dataset plus an optional monthly research table
+- Define first gold labels for 1W / 2W / 1M / 3M horizons
+- Train an initial supervised deep learning baseline before adding more asset classes
+- Save prediction snapshots so refreshed runs can be compared over time
 
 ### Phase 2 — Deep quantile model + scenario generation
 
-- Multi-horizon quantile regression model (1/3/6/12 months)
+- Multi-horizon quantile regression model (1W / 2W / 1M / 3M first)
 - Quantile → empirical distribution conversion and scenario sampling
 - Scenario-based metrics (expected return, probability of loss, VaR/ES)
 - Calibration and evaluation (pinball loss, backtest comparisons)
@@ -88,16 +91,23 @@ Starting with **Gold** as the first asset before expanding to the full stock uni
 - Choose stop levels that maximize expected utility under scenarios
 - Upgrade risk controls from monthly checks to daily monitoring
 
+## Later research directions
+
+- Add semantic/news features after the numeric gold baseline is stable
+- Expand to stocks after the gold pipeline and first baseline model are working
+- Explore reinforcement learning for adaptive signal weighting or policy optimization only after the supervised baseline is reliable
+
 ## Short-term to-do list
 
-- [ ] Build Alpha Vantage client (`src/alphavantage/`) — gold price, commodities, GDP
-- [ ] Add yfinance wrapper (`src/yfinance_/`) — gold volume, equity indices
-- [ ] Initial gold data pull: full history for all gold-relevant series
-- [ ] Consolidate raw data into ML-ready panel (`data/processed/`)
-- [ ] EDA notebook: gold price vs macro features exploration
-- [ ] Feature engineering: rolling windows, returns, regime indicators
-- [ ] First deep learning model: gold return forecasting
-- [ ] Expand data sources and models to US equities
+- [ ] Build Alpha Vantage client (`src/alphavantage/`) for gold and related commodity series
+- [ ] Pull full-history gold series and persist raw artifacts alongside the current FRED starter macro set
+- [ ] Build the first processed as-of dataset in `data/processed/`
+- [ ] Define the first target labels for 1W / 2W / 1M / 3M prediction horizons
+- [ ] Train the first deep learning baseline for gold
+- [ ] Save prediction snapshots and evaluation outputs for rerun comparison
+- [ ] Add yfinance market-context features if the first baseline needs more support
+- [ ] Expand to stocks after the gold baseline is stable
+- [ ] Add semantic/news data after the numeric baseline is stable
 
 ## For developers
 

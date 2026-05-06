@@ -13,12 +13,16 @@ Implemented today:
 - CLI-first data downloads to local disk (Parquet for tabular, JSON for single-entity)
 - Basic request usage tracking persisted to `config/fmp_usage.json` for FMP
 - Live-API tests for both FMP and FRED clients
+- Current FRED starter macro collection is sufficient to begin Alpha Vantage gold-price ingestion and the first baseline model build
 
 Roadmap (high-level):
 - Phase 1: data foundation + baseline signals
 - Phase 2: quantile model + scenario generation
 - Phase 3: portfolio optimization + long/short
 - Phase 4: dynamic stop optimization
+
+Immediate next milestone:
+- Alpha Vantage gold-series ingestion -> daily as-of processed dataset -> first gold baseline deep learning model
 
 IMPORTANT: The sections below under "Target design" are not implemented yet. They define the development specification so we can implement consistently.
 
@@ -126,7 +130,7 @@ python -m fmp.tools.fmp_cli profile --symbol AAPL
 python -m fmp.tools.fmp_cli chart --symbol AAPL --from 2024-01-01 --to 2024-01-31
 python -m fmp.tools.fmp_cli income --symbol AAPL --period annual --limit 5
 python -m fred.tools.fred_cli series --id FEDFUNDS
-python -m fred.tools.fred_cli observations --id FEDFUNDS --from 2024-01-01 --to 2024-12-31(Optional)
+python -m fred.tools.fred_cli observations --id FEDFUNDS --from 2024-01-01 --to 2024-12-31  # optional --to
 ```
 
 ### Output layout
@@ -140,9 +144,9 @@ Default output root: `data/raw`
 - FRED series metadata (JSON): `data/raw/fred-series/<SERIES_ID>/<timestamp>.json`
 - FRED observations (Parquet): `data/raw/fred-observations/<SERIES_ID>/<from>_<to>.parquet`
 
-### Accumulating data by rebalance date (recommended convention)
+### Accumulating data by prediction date (recommended convention)
 
-For monthly rebalances, prefer saving outputs under a rebalance run “as-of” date so you can:
+For scheduled or event-driven prediction refreshes, prefer saving outputs under an as-of date so you can:
 - re-run without overwriting prior artifacts
 - reproduce model training inputs
 - compare revisions (re-downloads) over time
@@ -153,19 +157,19 @@ A simple convention (not yet implemented in the CLI; manual via `--out`):
 
 You can approximate this today by passing `--out data/raw/<endpoint>/asof=YYYY-MM-DD` to the CLI. Native support is planned for a future CLI update.
 
-## Target design (roadmap): monthly decision clock
+## Target design (roadmap): refreshable decision clock
 
-The target system runs on a monthly schedule over a fixed universe (target: ~80–90 tickers).
+The target system should support scheduled and event-driven reruns over a fixed universe. The main operational modeling layer should be a daily as-of dataset, with monthly tables reserved for research and slower backtests.
 
-At each rebalance date (month-end or first trading day after), run:
+At each refresh date (weekly, biweekly, or event-driven), run:
 
-1. Update raw data (EOD prices + selected fundamentals)
-2. Build features into a monthly modeling table (rolling window)
-3. Forecast return distributions for horizons $H \in \{1,3,6,12\}$ months
+1. Update raw data from whichever sources have changed
+2. Build an as-of feature table that carries forward the latest known lower-frequency values
+3. Forecast return distributions for horizons $H \in \{1W, 2W, 1M, 3M\}$
 4. Sample $M$ scenarios per asset/horizon and compute risk metrics
-5. Compute asset utilities, rank candidates, and select Top-K (≤ 5)
-6. Optimize weights under constraints (cash allowed, gross exposure capped)
-7. Produce trade list + a reproducible run bundle (artifacts)
+5. Persist a prediction snapshot and compare it with the prior run
+6. Compute asset utilities, rank candidates, and optionally update portfolio weights
+7. Produce a reproducible run bundle (artifacts)
 
 ## Target design (roadmap): three-layer architecture
 
@@ -174,8 +178,8 @@ At each rebalance date (month-end or first trading day after), run:
 Objective: forecast probabilistic distributions of future returns (not a single return).
 
 Inputs (MVP):
-- Monthly historical features per asset (rolling window, e.g., 36–60 months)
-- Candidate features: returns (1M/3M/6M/12M), rolling volatility, momentum, drawdown metrics, optional beta
+- As-of historical feature windows per asset or product (daily rows with latest known macro values)
+- Candidate features: gold returns, rates, real yields, inflation, USD, VIX, optional market context; semantic inputs later
 
 Outputs (two compatible approaches):
 
@@ -185,7 +189,7 @@ Option A1 — Parametric distributional model (Student-t)
 Option A2 — Quantile model (recommended MVP)
 - Predict non-parametric quantiles $q_{i,t,H}(\alpha)$ for:
 	- $\alpha \in \{0.05, 0.25, 0.50, 0.75, 0.95\}$
-- Train separate heads per horizon (1/3/6/12 months) to avoid compounding errors from recursive forecasting
+- Train separate heads per horizon (1W / 2W / 1M / 3M first; longer-term later) to avoid compounding errors from recursive forecasting
 
 Quantile (pinball) loss:
 
@@ -251,15 +255,15 @@ Soft concentration caps (recommended):
 ## Data engineering notes (target conventions)
 
 Raw data:
-- Daily OHLCV (adjusted when available)
+- Keep each source at its native frequency and release timestamp
 - Stored immutably as Parquet/JSON artifacts
 
 Processed tables:
-- Daily adjusted returns
-- Monthly resampled feature table (primary modeling dataset)
+- Daily as-of feature table (primary modeling dataset)
+- Monthly resampled research table (secondary sandbox/backtest dataset)
 
 Labels:
-- Forward returns for horizons $H \in \{1,3,6,12\}$ months:
+- Forward returns for first baseline horizons $H \in \{1W, 2W, 1M, 3M\}$:
 
 $$
 Y_{t,H} = \frac{P_{t+H}}{P_t} - 1
@@ -296,17 +300,19 @@ Target (roadmap):
 - NumPy / SciPy (scenario sampling, metrics)
 - CVXPY (optional, portfolio weight optimization)
 - matplotlib / seaborn (evaluation plots)
+- Reinforcement learning or adaptive signal-weighting experiments after the supervised baseline is stable
 
 ## Backtesting specification (target)
 
-Method: walk-forward monthly backtest.
+Method: walk-forward refresh backtest.
 
-Steps per month:
+Steps per refresh date:
 1. Predict return distributions (Layer A)
 2. Generate scenarios and compute metrics (Layer B)
-3. Rank assets and optimize portfolio (Layer C)
-4. Apply transaction costs and tax assumptions
-5. Record portfolio return for the month
+3. Compare the current prediction snapshot with the prior snapshot
+4. Rank assets and optimize portfolio (Layer C)
+5. Apply transaction costs and tax assumptions
+6. Record portfolio return for the evaluation window
 
 Evaluation metrics:
 - CAGR
@@ -327,4 +333,6 @@ The current setup assumes the FMP free tier. Symbol coverage depends on your pla
 ## Known limitations (current)
 
 - The project is still in the data-collection stage; forecasting/models/portfolio code is roadmap work.
+- Alpha Vantage and yfinance integrations are still pending, and the first gold baseline model is not implemented yet.
+- Stocks expansion, semantic/news features, and reinforcement learning are later-stage additions.
 - Free-tier symbols may be restricted by FMP plan (see list above).

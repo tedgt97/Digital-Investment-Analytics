@@ -11,13 +11,20 @@
 - `tools/fmp_cli.py` — CLI subcommands: `quote`, `chart`, `income`, `profile` → Parquet/JSON to `data/raw/`
 - `__init__.py` — exports `config`, `FMPClient`
 
+### FRED Client (`src/fred/`)
+- `config.py` — loads API key from `config/api_keys.txt` (file-based, not env vars)
+- `client.py` — `FREDClient` with methods: `get_series`, `get_series_observations`
+- `tools/fred_cli.py` — CLI subcommands: `series`, `observations` → JSON/Parquet to `data/raw/`
+- `__init__.py` — exports `config`, `FREDClient`
+
 ### Tests (`tests/`)
 - `test_fmp_client.py` — 7 live-API tests (init, quote, chart, income, profile, invalid symbol, invalid date)
+- `test_fred_client.py` — live-API tests for FREDClient methods
 - `test_setup.py` — standalone setup verification script
 
 ### Docs
-- `README.md` — investor-facing: vision, monthly loop, 3-layer architecture, Phase 1-4 roadmap, gold pivot
-- `README_DEV.md` — developer-facing: setup, CLI, data layout, target design spec (Layer A/B/C math)
+- `README.md` — investor-facing: short/medium-horizon roadmap, refreshable decision flow, gold pivot
+- `README_DEV.md` — developer-facing: setup, CLI, as-of data guidance, target design spec (Layer A/B/C math)
 - `.github/copilot-instructions.md` — AI agent orientation
 - `version_list.txt` — changelog through ver.0.2.2
 
@@ -26,21 +33,21 @@
 - `config/api_keys.example.txt` — safe template (committed)
 - `config/api_keys.txt` — real key (git-ignored)
 
-## Not Started (Phase 1 — Gold Data Foundation)
+## Next Up (Phase 1 — Gold Baseline Build)
 
 - [x] Register FRED API key
 - [x] Register Alpha Vantage API key
-- [ ] Build `src/fred/` client (macro, rates, FX, VIX)
+- [x] Build `src/fred/` client (macro, rates, FX, VIX)
 - [ ] Build `src/alphavantage/` client (gold price, commodities, GDP)
-- [ ] Add `src/yfinance_/` wrapper (gold volume, equity indices)
-- [ ] Initial gold data pull — full history for all gold-relevant series
-- [ ] Consolidate raw data into ML-ready panel (`data/processed/`)
-- [ ] EDA notebook: gold price vs macro features
-- [ ] Feature engineering: rolling windows, returns, regime indicators
-- [ ] Baseline signals for sanity checks
+- [ ] Pull initial gold price/history series and persist raw artifacts
+- [ ] Build the first daily as-of processed dataset combining gold data with the current FRED starter macros
+- [ ] Define the first label set for 1W / 2W / 1M / 3M horizons
+- [ ] Train the initial deep learning baseline for gold
+- [ ] Save prediction snapshots for rerun comparison
+- [ ] Add `src/yfinance_/` market-context wrapper if the first baseline needs more support
 
-## Future (Phases 2-4)
+## Later Expansion
 
-- Phase 2: Deep quantile model + scenario generation
-- Phase 3: Portfolio optimization + long/short decision engine
-- Phase 4: Dynamic stop / force-sale optimization
+- Expand to stocks after the gold baseline is stable
+- Add semantic/news features after the numeric baseline is stable
+- Research reinforcement learning for adaptive signal weighting or policy optimization after the supervised baseline is stable
