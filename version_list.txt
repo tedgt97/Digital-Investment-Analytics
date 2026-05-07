@@ -30,4 +30,5 @@ ver.0.2.2
     - FRED CLI complete
     - update README.md and README_DEV.md for FRED workflow
     - collecting FRED macro variables using CLI
-    * Alpha vantage CLI creation
+    - Alpha Vantage init config client
+    * Alpha Vantage tests and tools
